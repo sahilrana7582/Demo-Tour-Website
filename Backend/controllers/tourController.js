@@ -1,36 +1,16 @@
 const Tour = require('../models/tourModel');
+const ApiFeatures = require('../utils/apiFeatures');
 
+// Route Handler: allTours
 exports.allTours = async (req, res) => {
   try {
-    let queryObj = { ...req.query };
-    const exclude = ['fields', 'sort', 'limit', 'page'];
-    exclude.map((ele) => delete queryObj[ele]);
+    const features = new ApiFeatures(Tour.find(), req.query)
+      .filter()
+      .sort()
+      .limitFields()
+      .paginate();
 
-    //Advanced Filter
-    let queryStr = JSON.stringify(queryObj);
-    queryStr = queryStr.replace(/\b(gt|gte|lt|lte)\b/g, (m) => `$${m}`);
-    queryStr = JSON.parse(queryStr);
-    let query = Tour.find(queryStr);
-
-    //Sort
-    if (req.query.sort) {
-      const sortBy = req.query.sort;
-      query = query.sort(sortBy);
-    }
-
-    if (req.query.fields) {
-      const fields = req.query.fields.split(',').join(' ');
-      query = query.select(fields);
-    }
-
-    //Limit
-    const page = req.query.page * 1 || 1;
-    const limitDoc = req.query.limit * 1 || 3;
-    const skipDoc = (page - 1) * limitDoc;
-
-    query = query.skip(skipDoc).limit(limitDoc);
-
-    const tours = await query;
+    const tours = await features.query;
     res.status(200).json({
       status: 'Success',
       results: tours.length,
@@ -39,7 +19,8 @@ exports.allTours = async (req, res) => {
       },
     });
   } catch (e) {
-    res.status(200).json({
+    console.error('Error:', e); // Log the error for debugging
+    res.status(400).json({
       status: 'Failed',
       data: {
         Message: 'Not able to get all tours',
