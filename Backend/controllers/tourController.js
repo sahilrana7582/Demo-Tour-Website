@@ -1,33 +1,23 @@
 const Tour = require('../models/tourModel');
 const ApiFeatures = require('../utils/apiFeatures');
+const catchAsync = require('../utils/catchAsync');
 
-// Route Handler: allTours
-exports.allTours = async (req, res) => {
-  try {
-    const features = new ApiFeatures(Tour.find(), req.query)
-      .filter()
-      .sort()
-      .limitFields()
-      .paginate();
+exports.allTours = catchAsync(async (req, res) => {
+  const features = new ApiFeatures(Tour.find(), req.query)
+    .filter()
+    .sort()
+    .limitFields()
+    .paginate();
 
-    const tours = await features.query;
-    res.status(200).json({
-      status: 'Success',
-      results: tours.length,
-      data: {
-        tours,
-      },
-    });
-  } catch (e) {
-    console.error('Error:', e); // Log the error for debugging
-    res.status(400).json({
-      status: 'Failed',
-      data: {
-        Message: 'Not able to get all tours',
-      },
-    });
-  }
-};
+  const tours = await features.query;
+  res.status(200).json({
+    status: 'Success',
+    results: tours.length,
+    data: {
+      tours,
+    },
+  });
+});
 
 exports.creatTour = async (req, res) => {
   try {
@@ -72,4 +62,50 @@ exports.deletTour = (req, res) => {
       msg: 'This is Delete',
     },
   });
+};
+exports.getStats = async (req, res) => {
+  try {
+    const stats = await Tour.aggregate([
+      {
+        $match: { ratingsAverage: { $gte: 4.5 } },
+      },
+      {
+        $group: {
+          _id: '$difficulty',
+          numTours: { $sum: 1 },
+          numRatings: { $sum: '$ratingsQuantity' },
+          avgRating: { $avg: '$ratingsAverage' },
+          avgPrice: { $avg: '$price' },
+          minPrice: { $min: '$price' },
+          maxPrice: { $max: '$price' },
+        },
+      },
+      {
+        $sort: { avgPrice: 1 },
+      },
+    ]);
+
+    console.log('Hello');
+    res.status(200).json({
+      status: 'Success',
+      data: {
+        stats,
+      },
+    });
+  } catch (e) {
+    res.status(404).json({
+      status: 'Failed',
+      message: e.message,
+    });
+  }
+};
+
+exports.checkID = (req, res, next, val) => {
+  if (!val) {
+    res.status(404).json({
+      status: 'Failed',
+      message: 'No id Found',
+    });
+  }
+  next();
 };

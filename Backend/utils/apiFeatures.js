@@ -27,6 +27,8 @@ class ApiFeatures {
       const sortBy = this.queryStrr.sort.split(',').join(' ');
       console.log('Sorting by:', sortBy); // Log to verify sort string
       this.queryDoc = this.queryDoc.sort(sortBy);
+    } else {
+      this.queryDoc = this.queryDoc.sort('createdAt');
     }
     return this;
   }
@@ -35,6 +37,8 @@ class ApiFeatures {
     if (this.queryStrr.fields) {
       const fields = this.queryStrr.fields.split(',').join(' ');
       this.queryDoc = this.queryDoc.select(fields);
+    } else {
+      this.queryDoc = this.queryDoc.select('-__v');
     }
     return this;
   }
