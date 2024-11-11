@@ -3,7 +3,6 @@ const ApiFeatures = require('../utils/apiFeatures');
 const catchAsync = require('../utils/catchAsync');
 
 exports.allTours = catchAsync(async (req, res) => {
-  console.log(req.headers.authorization);
   const features = new ApiFeatures(Tour.find(), req.query)
     .filter()
     .sort()
