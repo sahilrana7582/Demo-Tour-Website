@@ -61,6 +61,19 @@ userSchema.methods.comparePass = async function (realPass, userPass) {
   return await bcrypt.compare(userPass, realPass);
 };
 
+userSchema.methods.createResetToken = async function () {
+  const token = crypto.randomBytes(32).toString('hex');
+
+  this.passwordResetToken = crypto
+    .createHash('sha256')
+    .update(token)
+    .digest('hex');
+
+  this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
+
+  return token;
+};
+
 const User = mongoose.model('User', userSchema);
 
 module.exports = User;

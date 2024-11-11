@@ -13,11 +13,14 @@ router
   .route('/')
   .all(authController.protect)
   .get(tourController.allTours)
-  .post(tourController.creatTour);
+  .post(
+    authController.restrictTo('admin', 'lead-guide'),
+    tourController.creatTour
+  );
 
 router
   .route('/:id')
-  .all(authController.protect)
+  .all(authController.protect, authController.restrictTo('admin', 'lead-guide'))
   .get(tourController.getTour)
   .delete(tourController.deletTour)
   .patch(tourController.updateTour);
