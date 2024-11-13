@@ -10,6 +10,12 @@ router.param('id', tourController.checkID);
 router.route('/get-tour-states').get(tourController.getStats);
 
 router
+  .route('/tours-within/:distance/center/:latlng/unit/:unit')
+  .get(tourController.getToursWithin);
+
+router.route('/distances/:latlng/unit/:unit').get(tourController.getDistances);
+
+router
   .route('/')
   .all(authController.protect)
   .get(tourController.allTours)
